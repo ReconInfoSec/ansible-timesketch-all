@@ -1,0 +1,46 @@
+---
+
+scriptsdir: /usr/local/bin
+backupdir: /var/_backup
+
+timesketch_root: /var/timesketch
+## user to run daemon
+timesketch_user: "_timesketch"
+#timesketch_user: "{{ ansible_ssh_user }}"
+timesketch_listen: 0.0.0.0
+#timesketch_listen: 0.0.0.0
+timesketch_port: 5000
+
+timesketch_with_elasticv1: false
+timesketch_elastic_host: 127.0.0.1
+timesketch_elastic_port: 9200
+
+timesketch_db_user: timesketch
+timesketch_db_pass: timesketch
+timesketch_db: timesketchdb
+timesketch_db_host: localhost
+timesketch_db_port: 5432
+
+timesketch_uploading: true
+timesketch_plaso_uploading_dir: /tmp
+timesketch_plaso_uploading_brokerurl: 'redis://127.0.0.1:6379'
+timesketch_plaso_uploading_backend: 'redis://127.0.0.1:6379'
+
+timesketch_process: true
+
+## plasofile must be the name of the uncompressed file
+timesketch_process_url:
+## 312MB
+#    - { url: 'http://www.honeynet.org/challenge2011/downloads/victoria-v8.sda1.img.zip', checksum: 'sha256:d11568d3185d3eba1e3f99fd87a8ec67d35ae571fbf6e26f2ba5f51ff22fe98d', plasofile: 'victoria-v8.sda1' }
+# <1MB
+    - { url: 'http://old.honeynet.org/scans/scan24/image.zip', checksum: 'sha256:e1f368dd852351151c348ac8c92a386fcdb1cf970212c052f9e08aa963d0c813', plasofile: 'image' }
+#    - { url: 'http://linuxleo.com/Files/ntfs_pract.dd.gz', checksum: 'sha256:55a52a50314fe6a87fec13b9cc59d514a99b482bf9b4e816d4add5c747fe4577', plasofile: 'ntfs_pract.dd' }
+#    - { url: 'http://www.isfce.com/CCE_Sample_PE_RAW.zip', checksum: 'sha256:81cadac1a41bc4d5240f354f136785295b5b7e5d9aede50f98796c4325917351', plasofile: 'CCE_Sample_PE.001' }
+
+## FIXME! not processed currently
+## from orchestrator (url is src path, checksum is unused as copy only has a checksum result option but no argument)
+timesketch_process_files: []
+#timesketch_process_files:
+#    - { url: '', checksum: '', plasofile: '' }
+timesketch_retrieve_plasofile: false
+timesketch_retrieve_dir: tmp

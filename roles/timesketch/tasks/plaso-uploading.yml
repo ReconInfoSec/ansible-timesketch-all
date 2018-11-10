@@ -1,0 +1,17 @@
+---
+
+- name: Enable plaso uploading in timesketch
+  replace: dest=/etc/timesketch.conf regexp="{{ item.re }}" replace="{{ item.rep }}"
+  with_items:
+    - { re: '^UPLOAD_ENABLED = .*', rep: 'UPLOAD_ENABLED = True' }
+    - { re: "^UPLOAD_FOLDER = u'/tmp'", rep: "UPLOAD_FOLDER = u'{{ timesketch_plaso_uploading_dir }}'" }
+    - { re: "^CELERY_BROKER_URL=.*", rep: "CELERY_BROKER_URL='{{ timesketch_plaso_uploading_brokerurl }}'" }
+    - { re: "^CELERY_RESULT_BACKEND=.*", rep: "CELERY_RESULT_BACKEND='{{ timesketch_plaso_uploading_backend }}'" }
+  notify:
+    - restart supervisor
+
+- name: set supervisor config for celery
+  template: src=supervisord-celery.ini dest={{ supervisor_confdir }}/timesketch-celery.{{ supervisor_extconf }} mode=0644
+  notify:
+    - restart supervisor
+

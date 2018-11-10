@@ -1,0 +1,20 @@
+#!/bin/sh
+# {{ ansible_managed }}
+## backup script for timesketch
+
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+umask 022
+
+date=`date +%Y-%m-%d`
+dest={{ backupdir }}
+[ ! -d "$dest" ] && install -d -m 0700 -o root "$dest"
+destfile=$dest/backup-timesketch-$date.tar.gz
+
+dirs="{{ timesketch_root }}"
+sudo -u postgres pg_dumpall -c > $dest/timesketch-db-all.sql
+
+tar czf $destfile $dirs $dest/timesketch-db-all.sql
+rm $dest/timesketch-db-all.sql
+tar tzf $destfile > /dev/null
+openssl dgst -sha512 $destfile > $destfile.distinfo
+

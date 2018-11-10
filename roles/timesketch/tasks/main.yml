@@ -1,0 +1,112 @@
+---
+## https://github.com/google/timesketch/wiki/Installation
+
+- name: Include version-specific variables for Ubuntu.
+  include_vars: "{{ ansible_distribution }}-{{ ansible_distribution_version }}.yml"
+  when: ansible_distribution == 'Ubuntu'
+#- name: Include OS-specific variables for Fedora.
+#  include_vars: "{{ ansible_distribution }}.yml"
+#  when: ansible_distribution == 'Fedora'
+- name: Include version-specific variables for RedHat
+  include_vars: "RedHat-{{ ansible_distribution_version.split('.')[0] }}.yml"
+  when: ansible_os_family == "RedHat" or ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Debian | requirements
+  include: debian.yml
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Redhat | requirements
+  include: redhat.yml
+  when: ansible_os_family == "RedHat" or ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+## if not provided by gift ppa
+- name: plaso pip dependencies
+  pip: name={{ item }} state=present
+  with_items:
+    - artifacts
+    - bencode
+  when: not (ansible_distribution_release == 'trusty' or ansible_distribution_release == 'xenial')
+
+- name: pip install setuptools
+  pip:
+    name: setuptools
+
+- name: Bugfix trusty - force Flask-Login v0.3.2 - https://github.com/google/timesketch/pull/244
+  pip: name=Flask-login version=0.3.2 state=present
+  when: (ansible_distribution_release == 'trusty' or ansible_distribution_release == 'xenial')
+
+- name: check role user exists
+  user: "name={{ timesketch_user }} home={{ timesketch_root }}"
+  become: yes
+
+- name: install timesketch with pip
+  pip:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - timesketch
+    - timesketch-api-client
+
+- name: set up timesketch config
+  command: "rsync -ci {{ timesketch_pip_share }}/timesketch.conf /etc/timesketch.conf creates=/etc/timesketch.conf"
+  register: rsync_result
+  changed_when: 'rsync_result.stdout != ""'
+  notify:
+    - restart supervisor
+
+- name: Ensure timesketch var directory exists
+  file: dest="{{ timesketch_root }}" state=directory mode=0755 owner="{{ timesketch_user }}"
+- name: generating random secret
+  command: "openssl rand -base64 32"
+  register: rand
+  changed_when: False
+- name: inserting secret in timesketch config
+  replace: dest=/etc/timesketch.conf regexp="SECRET_KEY = u''" replace="SECRET_KEY = u'{{ rand.stdout }}'"
+  notify:
+    - restart supervisor
+  no_log: true
+- name: configuring db in timesketch config
+#  replace: dest=/etc/timesketch.conf regexp="SQLALCHEMY_DATABASE_URI = 'postgresql://<USERNAME>:<PASSWORD>/timesketch'" replace="SQLALCHEMY_DATABASE_URI = u'sqlite:///{{ timesketch_root }}/database.db'"
+  replace: dest=/etc/timesketch.conf regexp="SQLALCHEMY_DATABASE_URI = 'postgresql://.*'" replace="SQLALCHEMY_DATABASE_URI = 'postgresql://{{ timesketch_db_user }}:{{ timesketch_db_pass }}@{{ timesketch_db_host }}:{{ timesketch_db_port }}/{{ timesketch_db }}'"
+  notify:
+    - restart supervisor
+
+- name: update elasticsearch settings in timesketch.conf
+  replace: dest=/etc/timesketch.conf regexp="{{ item.re }}" replace="{{ item.rep }}"
+  with_items:
+    - { re: "^ELASTIC_HOST = u'127.0.0.1'", rep: "ELASTIC_HOST = u'{{ timesketch_elastic_host }}'" }
+    - { re: '^ELASTIC_PORT = 9200', rep: "ELASTIC_PORT = {{ timesketch_elastic_port }}" }
+  notify:
+    - restart supervisor
+
+- include_tasks: configure-postgresql.yml
+
+- debug: var=timesketch_userlist
+## FIXME! idempotent? overwrite any existing user
+
+- name: add timesketch user
+#  command: "tsctl add_user -u {{ item.u }} -p {{ item.p }} creates=/var/timesketch/database.db"
+  command: "tsctl add_user -u {{ item.u }} -p {{ item.p }}"
+  with_items: "{{ timesketch_userlist }}"
+  become: yes
+  become_user: "{{ timesketch_user }}"
+
+#- name: start timesketch
+#  command: "tsctl runserver"
+
+- name: set supervisor config to manage timesketch
+  template: src=supervisord.ini dest={{ supervisor_confdir }}/{{ supervisor_targetconf }} mode=0644
+  notify:
+    - restart supervisor
+
+- include: backup-script.yml
+
+## FIXME! ansible bug. not working on xenial
+- name: ensure supervisor service is enabled and started
+  service: name={{ supervisor_service }} enabled=yes state=started
+
+- include: plaso-uploading.yml
+  when: timesketch_uploading is defined and timesketch_uploading
+#
+# - include: plaso-process.yml
+#   when: timesketch_process is defined and timesketch_process

@@ -1,0 +1,16 @@
+---
+
+- hosts: all
+#- hosts: test-kitchen
+  vars:
+    - elasticsearch_script_inline: true
+    - postgresql_users:
+        - name: timesketch
+          password: timesketch
+          db: timesketchdb
+    - postgresql_databases:
+        - name: timesketchdb
+    - timesketch_process: false
+  roles:
+    - juju4.timesketch
+

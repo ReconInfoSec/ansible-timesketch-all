@@ -1,0 +1,31 @@
+---
+
+timesketch_pkg:
+    - git
+    - python
+    - python-pip
+    - python-dev
+    - libffi-dev
+    - supervisor
+    - unzip
+## https://github.com/google/timesketch/pull/244
+#    - python-flask
+## from gift ppa
+    - python-artifacts
+    - python-bencode
+    - libscca
+    - libscca-python
+    - python-plaso
+    - plaso-tools
+
+timesketch_gift_remove: []
+
+timesketch_pip_share: /usr/local/share/timesketch
+
+timesketch_jdk: openjdk-7-jre-headless
+supervisor_confdir: /etc/supervisor/conf.d
+supervisor_targetconf: timesketch.conf
+supervisor_extconf: conf
+supervisor_service: supervisor
+
+postgres_confdir: /etc/postgresql/9.3/main

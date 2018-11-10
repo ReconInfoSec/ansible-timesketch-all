@@ -1,0 +1,13 @@
+---
+
+- name: Ubuntu | add universe repository
+  apt_repository: repo="deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }} universe" state=present
+- name: Ubuntu | add gift/stable ppa
+  apt_repository: repo='ppa:gift/stable' state=present
+  when: ansible_distribution_release == 'trusty'
+
+- name: Ubuntu | Install Plaso
+  apt: name={{item}} state=present update_cache=yes
+  with_items:
+    - python-plaso
+

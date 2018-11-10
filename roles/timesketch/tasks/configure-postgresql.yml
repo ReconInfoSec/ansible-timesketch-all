@@ -1,0 +1,6 @@
+---
+
+- name: allow timesketch md5 auth
+  lineinfile: "dest={{ postgres_confdir }}/pg_hba.conf line='local    all             timesketch                              password' backup=yes"
+  notify:
+    - restart postgresql

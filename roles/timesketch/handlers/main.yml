@@ -1,0 +1,8 @@
+---
+
+- name: restart supervisor
+  service: name={{ supervisor_service }} state=restarted sleep=5
+
+- name: restart postgresql
+  service: name=postgresql state=restarted
+

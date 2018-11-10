@@ -1,0 +1,26 @@
+---
+
+- name: git clone plaso
+  git: repo=https://github.com/log2timeline/plaso.git
+       dest={{ timesketch_pip_share }}/plaso
+       version=1.5.0
+
+- name: git clone l2tdevtools
+  git: repo=https://github.com/log2timeline/l2tdevtools.git
+       dest={{ timesketch_pip_share }}/l2tdevtools
+       update=no
+## rpm build might night to patch l2tdevtools/build_helper.py _BUILD_DEPENDENCIES
+## centos7: s/python3-/python34-/g
+## Fedora24: s/python-/python2-/g
+- name: download and build with l2tdevtools
+  command: "{{ item }} chdir={{ timesketch_pip_share }}/l2tdevtools"
+  with_items:
+    - "python tools/build.py download"
+    - "python tools/build.py rpm"
+  environment:
+    PYTHONPATH: .
+- name: install built rpm
+  yum: name={{ item }} state=present
+  with_fileglob:
+    - "{{ timesketch_pip_share }}/l2tdevtools/build/*.rpm"
+

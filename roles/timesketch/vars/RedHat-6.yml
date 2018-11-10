@@ -1,0 +1,17 @@
+---
+
+timesketch_pkg:
+    - git
+    - supervisor
+    - openssl
+    - libffi-devel
+    - python-pip
+    - python-devel
+
+timesketch_pip_share: /usr/share/timesketch
+
+supervisor_confdir: /etc/supervisord.d
+supervisor_targetconf: timesketch.ini
+supervisor_extconf: ini
+supervisor_service: supervisord
+

@@ -1,0 +1,46 @@
+---
+
+timesketch_pkg:
+    - git
+    - supervisor
+    - openssl
+    - libffi-devel
+    - python-pip
+    - python-devel
+## source build
+## https://github.com/log2timeline/plaso/wiki/Dependencies-Fedora-Core
+    - "@Development Tools"
+    - gcc-c++
+    - python-devel
+    - python-setuptools
+    - rpm-build
+    - git
+    - mercurial
+    - flex
+    - byacc
+    - zlib-devel
+    - bzip2-devel
+    - openssl-devel
+    - fuse-devel
+    - libyaml
+    - pyparsing
+    - python-dateutil
+    - python-requests
+    - python-six
+    - PyYAML
+    - pytz
+    - python34-devel
+    - python34-setuptools
+    - python-test
+    - sqlite-devel
+
+timesketch_gift_remove: []
+
+timesketch_pip_share: /usr/share/timesketch
+
+supervisor_confdir: /etc/supervisord.d
+supervisor_targetconf: timesketch.ini
+supervisor_extconf: ini
+supervisor_service: supervisord
+
+postgres_confdir: /var/lib/pgsql/data

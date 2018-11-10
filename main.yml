@@ -1,0 +1,39 @@
+- name: Install dependencies
+  hosts: timesketch
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  roles:
+    - java
+    - elasticsearch
+    - postgresql
+    - redis
+    - gift
+
+- name: Install python (Timesketch install is not fully compatible with Python 3)
+  hosts: timesketch
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  tasks:
+    - name: install python
+      apt:
+        name: "{{ item }}"
+      with_items:
+        - python
+        - python-dev
+        - python-pip
+
+- name: Deploy Timesketch
+  hosts: timesketch
+  vars:
+    ansible_python_interpreter: /usr/bin/python
+    timesketch_userlist:
+        - { u: 'admin', p: 'password' }
+  roles:
+    - timesketch
+
+- name: Deploy nginx
+  hosts: timesketch
+  vars:
+    ansible_python_interpreter: /usr/bin/python
+  roles:
+    - nginx

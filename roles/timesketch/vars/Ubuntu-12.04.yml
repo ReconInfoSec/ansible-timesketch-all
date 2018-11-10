@@ -1,0 +1,19 @@
+---
+
+timesketch_pkg:
+    - git
+    - python
+    - python-pip
+    - python-dev
+    - libffi-dev
+    - supervisor
+    - unzip
+
+timesketch_pip_share: /usr/local/share/timesketch
+
+timesketch_jdk: openjdk-7-jre-headless
+supervisor_confdir: /etc/supervisor/conf.d
+supervisor_targetconf: timesketch.conf
+supervisor_extconf: conf
+supervisor_service: supervisor
+

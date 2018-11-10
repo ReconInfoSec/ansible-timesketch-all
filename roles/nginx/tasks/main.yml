@@ -1,0 +1,48 @@
+- name: Install/Setup Nginx
+  package:
+    name: '{{ item }}'
+    state: latest
+  with_items:
+    - nginx
+
+- name: Backup nginx conf
+  shell: cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bak
+
+- name: Remove old conf
+  shell: rm -rf /etc/nginx/sites-enabled/default 
+
+- file:
+    path: /etc/nginx/ssl
+    owner: root
+    group: root
+    state: directory
+
+- file:
+    path: /etc/nginx/ssl
+    state: directory
+    mode: 0400
+
+- name: Copy nginx.conf
+  template:
+    src: files/nginx/nginx.conf
+    dest:  /etc/nginx/nginx.conf
+
+- name: Copy nginx_timesketch.conf
+  template:
+    src: templates/nginx_timesketch.conf
+    dest: /etc/nginx/conf.d/nginx_timesketch.conf
+
+- name: Generate DH key
+  stat:
+    path: /etc/nginx/ssl/dhparam.pem
+  register: stat_dhparam
+- shell: openssl dhparam -out /etc/nginx/ssl/dhparam.pem 2048
+  when: stat_dhparam.stat.exists == False
+- shell: openssl req -new -nodes -x509 -days 3650 -subj "/C=US/ST=TX/L=Austin/O=Recon InfoSec/CN=timesketch" -keyout /etc/nginx/ssl/timesketch.key -out /etc/nginx/ssl/timesketch.crt
+  when: stat_dhparam.stat.exists == False
+
+- name: Start Nginx service
+  service:
+    name: nginx
+    state: restarted
+    enabled: yes

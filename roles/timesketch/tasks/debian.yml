@@ -1,0 +1,25 @@
+---
+
+- block:
+    - name: apt | remove conflicting packages with gift repository
+      apt: name={{item}} state=absent
+      with_items: "{{ timesketch_gift_remove }}"
+  when: timesketch_gift_remove is defined and timesketch_gift_remove != []
+
+- name: apt | timesketch packages dependencies
+  apt: name={{item}} state=present update_cache=yes cache_valid_time=3600
+  with_items: "{{ timesketch_pkg }}"
+
+- name: Ubuntu | add universe repository
+  apt_repository: repo="deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }} universe" state=present
+  when: ansible_distribution == 'Ubuntu'
+
+- block:
+    - name: Install OpenJDK
+      apt: name={{ timesketch_jdk }} state=latest
+
+    - name: Download Elasticsearch v1
+      get_url: url="https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-1.7.5.deb" dest=/root/elasticsearch-1.7.5.deb mode=0644
+    - name: Install Elasticsearch v1
+      apt: deb="/root/elasticsearch-1.7.5.deb" state=present
+  when: timesketch_with_elasticv1 is defined and timesketch_with_elasticv1
