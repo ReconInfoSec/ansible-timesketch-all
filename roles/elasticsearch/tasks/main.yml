@@ -29,12 +29,11 @@
     owner: root
     group: elasticsearch
     mode: 0750
-  notify: Restart elasticsearch
 
 - name: Start Elasticsearch
   service:
     name: elasticsearch
-    state: started
+    state: restarted
     enabled: yes
 
 - name: Make sure Elasticsearch is running before proceeding

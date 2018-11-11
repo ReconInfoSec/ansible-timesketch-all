@@ -3,4 +3,4 @@ elasticsearch_network_host: 0.0.0.0
 elasticsearch_http_port: 9200
 elasticsearch_script_inline: true
 elasticsearch_script_indexed: true
-es_heap_size: 16g
+es_heap_size: 2g
