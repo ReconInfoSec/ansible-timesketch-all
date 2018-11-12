@@ -11,8 +11,6 @@
 
 - name: Install python (Timesketch install is not fully compatible with Python 3)
   hosts: timesketch
-  vars:
-    ansible_python_interpreter: /usr/bin/python3
   tasks:
     - name: install python
       apt:
@@ -25,15 +23,17 @@
 - name: Deploy Timesketch
   hosts: timesketch
   vars:
-    ansible_python_interpreter: /usr/bin/python
     timesketch_userlist:
         - { u: 'admin', p: 'password' }
   roles:
     - timesketch
 
+- name: Deploy Kibana
+  hosts: timesketch
+  roles:
+    - kibana
+
 - name: Deploy nginx
   hosts: timesketch
-  vars:
-    ansible_python_interpreter: /usr/bin/python
   roles:
     - nginx

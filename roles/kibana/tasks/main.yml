@@ -1,0 +1,45 @@
+---
+- name: Debian/Ubuntu | Install apt-transport-https and ca-certificates
+  apt: name="{{ item }}" state=present update_cache=yes
+  with_items:
+    - apt-transport-https
+    - ca-certificates
+
+- name: Debian/Ubuntu | Add Elasticsearch GPG key
+  apt_key:
+    url: "https://artifacts.elastic.co/GPG-KEY-elasticsearch"
+    state: present
+
+- name: Debian/Ubuntu | Install Elastic repo
+  apt_repository:
+    repo: 'deb https://artifacts.elastic.co/packages/6.x/apt stable main'
+    state: present
+    filename: 'elastic_repo'
+
+- name: Debian/Ubuntu | Install Kibana
+  apt: name=kibana={{ elastic_stack_version }} state=present update_cache=yes
+  tags: install
+
+- name: Make sure Elasticsearch is running before proceeding.
+  wait_for: host={{ elasticsearch_network_host }} port={{ elasticsearch_http_port }} delay=3 timeout=300
+  tags: configure
+
+- name: Reload systemd
+  systemd: daemon_reload=yes
+  ignore_errors: yes
+
+- name: Kibana configuration
+  template:
+    src: kibana.yml.j2
+    dest: /etc/kibana/kibana.yml
+    owner: root
+    group: root
+    mode: 0664
+  notify: restart kibana
+  tags: configure
+
+- name: Ensure Kibana started and enabled
+  service:
+    name: kibana
+    enabled: yes
+    state: started
